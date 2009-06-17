@@ -1,0 +1,25 @@
+table {
+	background: #21211f;
+	border: 1px solid #3e3e3b;
+	position: relative;
+	width: 100%;
+}
+table td {
+	font: 12px/16px monospace;
+	padding: 0 7px;
+	vertical-align: top;
+}
+table td.timestamp {
+	text-align: right;
+	white-space: nowrap;
+}
+
+table td.message span.file {
+	color: #8ec0e5;
+}
+table td.message span.number {
+	color: #c2db82;
+}
+table td.message span.notice {
+	opacity: 0.7;
+}
