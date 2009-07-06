@@ -19,9 +19,28 @@
 			}
 		}
 		
-		protected function appendJump() {
+		public function build() {
+			$this->_view = (strlen(trim($_GET['logs'])) == 0 ? 'main' : $_GET['logs']);
+			$this->_xsl = @file_get_contents($this->_pagedata['filelocation']);
+			$this->_path = MANIFEST . '/logs/';
+			
+			// Find log files:
+			if (is_readable($this->_path) and is_dir($this->_path)) {
+				$files = scandir($this->_path);
+				
+				foreach ($files as $file) if ($file == 'main' || preg_match('/^main.[0-9]{10}.gz$/', $file)) {
+					$this->_files[$file] = filemtime($this->_path . $file);
+				}
+				
+				asort($this->_files);
+				$this->_files = array_reverse($this->_files, true);
+			}
+			
+			return parent::build();
+		}
+		
+		protected function buildJump($wrapper) {
 			$list = new XMLElement('ul');
-			$list->setAttribute('id', 'jump');
 			
 			foreach ($this->_files as $file => $timestamp) {
 				if ($file == 'main') {
@@ -40,31 +59,11 @@
 				}
 			}
 			
-			$this->Body->appendChild($list);
+			$wrapper->appendChild($list);
 		}
 		
-		public function appendContent() {
-			$this->addStylesheetToHead(URL . '/extensions/logsdevkit/assets/logs.css', 'screen', 1000);
-			
-			$this->_view = (strlen(trim($_GET['logs'])) == 0 ? 'main' : $_GET['logs']);
-			$this->_xsl = @file_get_contents($this->_pagedata['filelocation']);
-			$this->_path = MANIFEST . '/logs/';
-			
-			// Find log files:
-			if (is_readable($this->_path) and is_dir($this->_path)) {
-				$files = scandir($this->_path);
-				
-				foreach ($files as $file) if ($file == 'main' || preg_match('/^main.[0-9]{10}.gz$/', $file)) {
-					$this->_files[$file] = filemtime($this->_path . $file);
-				}
-				
-				asort($this->_files);
-				$this->_files = array_reverse($this->_files, true);
-			}
-			
-			$this->appendHeader();
-			$this->appendNavigation();
-			$this->appendJump();
+		protected function buildContent($wrapper) {
+			$this->addStylesheetToHead(URL . '/extensions/logsdevkit/assets/devkit.css', 'screen', 1032340);
 			
 			if (array_key_exists($this->_view, $this->_files)) {
 				$table = new XMLElement('table');
@@ -80,28 +79,23 @@
 					// Hilight files:
 					$item->message = preg_replace(
 						'%((/\S+)( on )(line [0-9]+))%',
-						'<span class="file">\\2</span>\\3<span class="number">\\4</span>',
+						'<span class="file">\\2</span>\\3<span class="line">\\4</span>',
 						$item->message
 					);
 					
 					$row = new XMLElement('tr');
 					$cell = new XMLElement('td');
-					$cell->setAttribute('class', 'message');
 					$cell->setValue($item->message);
 					$row->appendChild($cell);
 					
-					$cell = new XMLElement('td');
-					$cell->setAttribute('class', 'timestamp');
-					$span = new XMLElement('span');
-					$span->setAttribute('class', 'comment');
-					$span->setValue($item->timestamp);
-					$cell->appendChild($span);
+					$cell = new XMLElement('th');
+					$cell->setValue($item->timestamp);
 					$row->appendChild($cell);
 					
 					$table->appendChild($row);
 				}
 				
-				$this->Body->appendChild($table);
+				$wrapper->appendChild($table);
 			}
 		}
 		
@@ -109,6 +103,8 @@
 			$items = array(); $last = null;
 			
 			if (is_readable($file)) {
+				header('content-type: text/plain');
+				
 				if (preg_match('/.gz$/', $file)) {
 					$handle = gzopen($file, "r");
 					$data = gzread($handle, 1048576);
@@ -129,7 +125,7 @@
 				
 				// Find error lines:
 				$lines = preg_split(
-					'%(^|[\r\n]{1,2})(?=[0-9]{4}/[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} > )%',
+					'%^(?=([0-9]{4}/[0-9]{2}/[0-9]{2} )?[0-9]{2}:[0-9]{2}:[0-9]{2} > )%m',
 					implode("\n", $lines), 0, PREG_SPLIT_NO_EMPTY
 				);
 				
