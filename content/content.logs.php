@@ -84,13 +84,16 @@
 					);
 					
 					$row = new XMLElement('tr');
-					$cell = new XMLElement('td');
-					$cell->setValue($item->message);
-					$row->appendChild($cell);
 					
 					$cell = new XMLElement('th');
 					$cell->setValue($item->timestamp);
 					$row->appendChild($cell);
+					
+					$cell = new XMLElement('td');
+					$cell->setValue($item->message);
+					$row->appendChild($cell);
+					
+					
 					
 					$table->appendChild($row);
 				}
