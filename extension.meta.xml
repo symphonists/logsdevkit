@@ -20,6 +20,10 @@
 		<item type="image" url="http://symphonyextensions.com/rowan-lewis/logsdevkit/media/logsdevkit.png">Logs DevKit: View your Symphony logs</item>
 	</media>
 	<releases>
-		<release version="1.0.3" date="2010-01-07" min="2.0.4" />
+		<release version="1.1" date="2012-06-05" min="2.3">
+			- Update for Symphony 2.3
+			- Tolerate different date formats to correctly output logs
+		</release>
+		<release version="1.0.3" date="2010-01-07" min="2.0.4" max="2.2.5" />
 	</releases>
 </extension>
